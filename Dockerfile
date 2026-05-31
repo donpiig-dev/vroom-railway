@@ -39,6 +39,10 @@ RUN sed -i "s/port: 5000/port: 80/g" config.yml
 ENV PORT=3000
 EXPOSE 3000
 
+# Añade esto en el Dockerfile para que VROOM sea muy hablador
+ENV VROOM_LOG_LEVEL=info
+# Y este otro para que Express nos diga qué está pasando
+ENV DEBUG=express:*
 # ... (todo tu Dockerfile igual)
 # Añade esto antes del CMD
 ENV VROOM_PATH=/usr/local/bin/vroom
