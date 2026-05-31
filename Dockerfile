@@ -1,16 +1,19 @@
-# 1. Usamos Ubuntu LTS como base (garantiza binarios precompilados estables)
+# 1. Usamos Ubuntu LTS como base
 FROM ubuntu:22.04
 
 # Evitar preguntas interactivas durante la instalación
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 2. 🔥 INSTALACIÓN RELÁMPAGO DE NODE Y EL MOTOR VROOM NATIVO
+# 2. 🔥 REPARACIÓN DE REPOSITORIOS E INSTALACIÓN DE VROOM Y NODE
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
     curl \
     ca-certificates \
     git \
     sed \
-    vroom \
+    && add-apt-repository universe \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends vroom \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -26,7 +29,7 @@ RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
 RUN sed -i "s/host: 'localhost'/host: 'map-production-c2c6.up.railway.app'/g" config.yml
 RUN sed -i "s/port: 5000/port: 443/g" config.yml
 
-# 5. Instalar dependencias limpias de producción de Node (Omitiendo herramientas dev)
+# 5. Instalar dependencias limpias de producción de Node
 RUN npm install --omit=dev --ignore-scripts
 
 # 6. Configuración de puertos para Railway
