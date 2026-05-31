@@ -1,17 +1,17 @@
-# 1. Usamos Ubuntu LTS como base
+# 1. Base estable de Ubuntu LTS
 FROM ubuntu:22.04
 
-# Evitar preguntas interactivas durante la instalación
+# Forzar el modo no interactivo en todo el sistema
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 2. 🔥 REPARACIÓN DE REPOSITORIOS E INSTALACIÓN DE VROOM Y NODE
+# 2. 🔥 PARCHE DE REPOSITORIOS (NATIVO) E INSTALACIÓN RELÁMPAGO
+# Usamos 'sed' para descomentar los repositorios universe oficiales sin romper nada
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
     curl \
     ca-certificates \
     git \
     sed \
-    && add-apt-repository universe \
+    && sed -i 's/# \([^ ]* jammy.*universe\)/\1/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends vroom \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
