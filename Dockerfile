@@ -1,26 +1,17 @@
-# Usamos la imagen oficial de VROOM que ya incluye el binario compilado
-FROM vroomproject/vroom:v1.14.0
+# 1. Usamos el registro oficial actualizado de GitHub (ghcr.io)
+FROM ghcr.io/vroom-project/vroom-docker:v1.14.0
 
-# Instalamos Node.js para ejecutar el vroom-express
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nodejs \
-    npm \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# 2. La imagen oficial ya trae el servidor y la configuración.
+# Solo necesitamos indicarle que use el OSRM público en lugar de buscarlo localmente.
+# (Aplicamos el parche en las rutas donde la imagen oficial suele guardar la config)
+RUN sed -i "s/host: 'localhost'/host: 'router.project-osrm.org'/g" /vroom-express/config.yml || true && \
+    sed -i "s/port: 5000/port: 80/g" /vroom-express/config.yml || true
 
-# Clonar y configurar vroom-express
-RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
-WORKDIR /app
-RUN npm install --omit=dev --ignore-scripts
+RUN sed -i "s/host: 'localhost'/host: 'router.project-osrm.org'/g" /conf/config.yml || true && \
+    sed -i "s/port: 5000/port: 80/g" /conf/config.yml || true
 
-# Configuración
-RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
-RUN sed -i "s/host: 'localhost'/host: 'router.project-osrm.org'/g" config.yml
-RUN sed -i "s/port: 5000/port: 80/g" config.yml
-
-# La imagen oficial ya tiene el binario en /usr/local/bin/vroom
-ENV VROOM_PATH=/usr/local/bin/vroom
+# 3. Exponemos el puerto que espera Railway
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+# No necesitamos un CMD porque la imagen base ya arranca el servidor automáticamente
