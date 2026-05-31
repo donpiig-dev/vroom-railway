@@ -1,7 +1,5 @@
-# config.yml
 routing:
   osrm:
-    host: 'map-production-c2c6.up.railway.app'
-    port: 443
-    # Esto es vital para evitar el error de parsing de hints
+    host: 'router.project-osrm.org'
+    port: 80
     timeout: 30
