@@ -1,23 +1,17 @@
-# 1. Base estable de Ubuntu LTS
-FROM ubuntu:22.04
+# 1. Volvemos a la imagen ultra estable de Node sobre Debian
+FROM node:18-bullseye
 
-# Forzar el modo no interactivo en todo el sistema
-ENV DEBIAN_FRONTEND=noninteractive
-
-# 2. 🔥 PARCHE DE REPOSITORIOS (NATIVO) E INSTALACIÓN RELÁMPAGO
-# Usamos 'sed' para descomentar los repositorios universe oficiales sin romper nada
+# 2. 🔥 DESCARGA DIRECTA DEL BINARIO PRECOMPILADO (CERO COMPILACIÓN, CERO AP-GET ROTOR)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     git \
     sed \
-    && sed -i 's/# \([^ ]* jammy.*universe\)/\1/g' /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends vroom \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Descargamos el binario de VROOM v1.14.0 compilado para Linux x86_64, lo movemos y le damos permisos
+RUN curl -L -o /usr/local/bin/vroom https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 \
+    && chmod +x /usr/local/bin/vroom
 
 # 3. Clonar la interfaz Express (Node.js)
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
