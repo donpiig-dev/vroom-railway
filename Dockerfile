@@ -21,9 +21,10 @@ RUN git clone --recursive https://github.com/VROOM-Project/vroom.git /vroom-src 
     && cp /vroom-src/bin/vroom /usr/local/bin/vroom \
     && rm -rf /vroom-src
 
-# 3. Clonar la interfaz Express (Node.js)
-RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
-WORKDIR /app
+# Parche 3: Configurar tu OSRM en el config.yml de VROOM de forma nativa
+RUN sed -i "s/host: 'localhost'/host: 'map-production-c2c6.up.railway.app'/g" config.yml
+# Intentemos apuntar al puerto 80 estándar si Railway maneja la redirección HTTP transparente
+RUN sed -i "s/port: 5000/port: 80/g" config.yml
 
 # 4. PARCHES DE RED, CORS Y ENRUTAMIENTO (OSRM)
 RUN sed -i "s/app.use(express.json({/app.use((req, res, next) => { res.header('Access-Control-Allow-Origin', '*'); res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method'); res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE'); res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE'); if (req.method === 'OPTIONS') { return res.sendStatus(200); } next(); }); app.use(express.json({/g" src/index.js
