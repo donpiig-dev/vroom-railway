@@ -47,4 +47,6 @@ ENV DEBUG=express:*
 # Añade esto antes del CMD
 ENV VROOM_PATH=/usr/local/bin/vroom
 
-CMD ["sh", "-c", "node src/index.js & tail -f /dev/null"]
+# CMD ["sh", "-c", "node src/index.js & tail -f /dev/null"]
+# CMD temporal para diagnosticar el binario
+CMD ["sh", "-c", "/usr/local/bin/vroom --version && echo 'Binario OK' || echo 'Binario FALLA' && sleep 3600"]
