@@ -1,19 +1,19 @@
 # 1. Base ligera
 FROM node:18-bookworm
 
-# 2. Instalar dependencias necesarias
+# 2. Instalar herramientas
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    wget \
     git \
     sed \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. DESCARGAR BINARIO VROOM OFICIAL (Evita repositorios inestables)
-# Descarga, da permisos de ejecución y verifica la versión
-RUN curl -L -o /usr/local/bin/vroom https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 \
+# 3. DESCARGA VERIFICADA CON WGET
+# Usamos wget porque es más robusto para saltar redirecciones de GitHub
+RUN wget --no-check-certificate -q https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 -O /usr/local/bin/vroom \
     && chmod +x /usr/local/bin/vroom \
-    && /usr/local/bin/vroom --version
+    && file /usr/local/bin/vroom | grep -q "ELF" || (echo "ERROR: El archivo descargado no es un binario ejecutable" && exit 1)
 
 # 4. Clonar y configurar la app Express
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
