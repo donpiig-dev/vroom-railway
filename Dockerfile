@@ -1,7 +1,8 @@
-# 1. Usamos una base de desarrollo para tener acceso a los compiladores
+# 1. Base ligera
 FROM node:18-bookworm-slim
 
-# 2. Instalar solo lo estrictamente necesario para compilar
+# 2. INSTALACIÓN TOTAL DE DEPENDENCIAS
+# Instalamos TODO lo necesario para compilar y descargar en un solo paso
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
@@ -9,10 +10,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-all-dev \
     libglpk-dev \
     git \
+    curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Descargamos el código fuente de VROOM v1.14.0 (es un archivo .tar.gz pequeño)
+# 3. Compilación de VROOM
 RUN curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.14.0.tar.gz -o vroom.tar.gz \
     && tar -xzf vroom.tar.gz \
     && cd vroom-1.14.0 \
