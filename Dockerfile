@@ -1,4 +1,4 @@
-FROM vroomproject/vroom-express:v1.14.0
+FROM vroomproject/vroom-express:latest
 
 # Railway inyecta el puerto dinámicamente en la variable PORT, VROOM lo necesita en la configuración
 EXPOSE 3000
