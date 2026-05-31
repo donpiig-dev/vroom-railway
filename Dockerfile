@@ -1,17 +1,15 @@
-# 1. Volvemos a la imagen ultra estable de Node sobre Debian
-FROM node:18-bullseye
+# 1. Usamos Bookworm (Debian 12), que incluye vroom nativo en sus repositorios
+FROM node:18-bookworm
 
-# 2. 🔥 DESCARGA DIRECTA DEL BINARIO PRECOMPILADO (CERO COMPILACIÓN, CERO AP-GET ROTOR)
+# Evitar diálogos interactivos
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 2. 🔥 INSTALACIÓN NATIVA DIRECTA (SIN COMPILAR Y SIN DESCARGAS EXTERNAS)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
     git \
     sed \
+    vroom \
     && rm -rf /var/lib/apt/lists/*
-
-# Descargamos el binario de VROOM v1.14.0 compilado para Linux x86_64, lo movemos y le damos permisos
-RUN curl -L -o /usr/local/bin/vroom https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 \
-    && chmod +x /usr/local/bin/vroom
 
 # 3. Clonar la interfaz Express (Node.js)
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
