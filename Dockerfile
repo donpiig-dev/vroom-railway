@@ -1,25 +1,20 @@
-# 1. Base estable de Node con herramientas completas de Debian
-FROM node:18-bullseye
+# 1. Usamos Ubuntu LTS como base (garantiza binarios precompilados estables)
+FROM ubuntu:22.04
 
-# 2. DEPENDENCIAS COMPLETAS Y COMPILACIÓN NATIVA (OPTIMIZADA EN RAM)
+# Evitar preguntas interactivas durante la instalación
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 2. 🔥 INSTALACIÓN RELÁMPAGO DE NODE Y EL MOTOR VROOM NATIVO
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
     git \
     sed \
-    g++ \
-    make \
-    libssl-dev \
-    libasio-dev \
-    pkg-config \
+    vroom \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# 🔥 CORRECCIÓN: Quitamos '-j$(nproc)' para compilar en un solo hilo y no saturar la RAM de Railway
-RUN git clone --recursive https://github.com/VROOM-Project/vroom.git /vroom-src \
-    && cd /vroom-src \
-    && git checkout tags/v1.14.0 \
-    && cd src \
-    && make \
-    && cp /vroom-src/bin/vroom /usr/local/bin/vroom \
-    && rm -rf /vroom-src
 
 # 3. Clonar la interfaz Express (Node.js)
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
@@ -31,7 +26,7 @@ RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
 RUN sed -i "s/host: 'localhost'/host: 'map-production-c2c6.up.railway.app'/g" config.yml
 RUN sed -i "s/port: 5000/port: 443/g" config.yml
 
-# 5. Instalar dependencias limpias de producción de Node
+# 5. Instalar dependencias limpias de producción de Node (Omitiendo herramientas dev)
 RUN npm install --omit=dev --ignore-scripts
 
 # 6. Configuración de puertos para Railway
