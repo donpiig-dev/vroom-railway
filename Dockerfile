@@ -1,8 +1,7 @@
 # 1. Base estable de Node con herramientas completas de Debian
 FROM node:18-bullseye
 
-# 2. 🔥 DEPENDENCIAS COMPLETAS Y COMPILACIÓN NATIVA
-# Añadimos libasio-dev y pkg-config obligatorios para el motor de C++ de VROOM
+# 2. DEPENDENCIAS COMPLETAS Y COMPILACIÓN NATIVA
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     sed \
@@ -13,8 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Clonamos y compilamos moviéndonos a la carpeta 'src' antes del make
-RUN git clone https://github.com/VROOM-Project/vroom.git /vroom-src \
+# 🔥 CORRECCIÓN CLAVE: Agregamos '--recursive' para clonar todos los submódulos de C++
+RUN git clone --recursive https://github.com/VROOM-Project/vroom.git /vroom-src \
     && cd /vroom-src \
     && git checkout tags/v1.14.0 \
     && cd src \
@@ -26,7 +25,7 @@ RUN git clone https://github.com/VROOM-Project/vroom.git /vroom-src \
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 WORKDIR /app
 
-# 4. 🔥 PARCHES DE RED, CORS Y ENRUTAMIENTO (OSRM)
+# 4. PARCHES DE RED, CORS Y ENRUTAMIENTO (OSRM)
 RUN sed -i "s/app.use(express.json({/app.use((req, res, next) => { res.header('Access-Control-Allow-Origin', '*'); res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method'); res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE'); res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE'); if (req.method === 'OPTIONS') { return res.sendStatus(200); } next(); }); app.use(express.json({/g" src/index.js
 RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
 RUN sed -i "s/host: 'localhost'/host: 'map-production-c2c6.up.railway.app'/g" config.yml
