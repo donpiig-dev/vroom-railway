@@ -15,12 +15,12 @@ RUN sed -i "s/app.use(express.json({/app.use((req, res, next) => { res.header('A
 # Parche 2: Escuchar en la interfaz pública 0.0.0.0 en lugar de localhost
 RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
 
-# 5. Instalar dependencias omitiendo las de desarrollo para ahorrar un 60% de RAM
-RUN npm install --only=production
+# 5. 🔥 INSTALACIÓN SEGURA: Ignoramos scripts de desarrollo y omitimos devDependencies
+RUN npm install --omit=dev --ignore-scripts
 
 # 6. Forzar a Express a leer la variable PORT dinámica de Railway
 ENV PORT=3000
 EXPOSE 3000
 
-# 🔥 CAMBIO CRUCIAL: Ejecutamos el archivo directamente con Node, saltándonos NPM
+# Ejecutamos el archivo directamente con Node, saltándonos NPM para ahorrar RAM
 CMD ["node", "src/index.js"]
