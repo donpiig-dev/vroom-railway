@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copiar el script de inicio y darle permisos de ejecución
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# COPY start.sh /start.sh
+# RUN chmod +x /start.sh
 RUN dos2unix /start.sh && \
     chmod +x /start.sh && \
     chmod +x /docker-entrypoint.sh
