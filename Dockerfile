@@ -1,52 +1,36 @@
-# 1. Base ligera
-FROM node:18-bookworm-slim
+# 1. Usamos una imagen de Debian estable (más completa que slim)
+FROM debian:bookworm
 
-# 2. INSTALACIÓN TOTAL DE DEPENDENCIAS
-# Instalamos TODO lo necesario para compilar y descargar en un solo paso
+# 2. Instalamos las dependencias de ejecución de VROOM
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    libasio-dev \
-    libboost-all-dev \
-    libglpk-dev \
+    nodejs \
+    npm \
     git \
+    libboost-program-options1.81.0 \
+    libboost-thread1.81.0 \
+    libglpk40 \
     curl \
-    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Compilación de VROOM (Ruta explícita y descarga robusta)
-RUN curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.14.0.tar.gz -o vroom.tar.gz \
-    && tar -xzf vroom.tar.gz \
-    && ls -R /vroom-1.14.0* # Debug: esto nos dirá en el log dónde está el CMakeLists.txt \
-    && cd $(ls -d /vroom-1.14.0*) \
-    && mkdir build && cd build \
-    && cmake .. \
-    && make \
-    && cp bin/vroom /usr/local/bin/vroom \
-    && chmod +x /usr/local/bin/vroom \
-    && cd / && rm -rf vroom-1.14.0* vroom.tar.gz
-
-# 4. Clonar y configurar vroom-express
+# 3. Instalamos vroom-express
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 WORKDIR /app
 RUN npm install --omit=dev --ignore-scripts
 
-# 5. Parches de configuración
+# 4. En lugar de compilar, bajamos el binario DE LA RELEASE OFICIAL
+# Esta vez bajamos la versión que es estáticamente vinculada
+RUN curl -L https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 -o /usr/local/bin/vroom \
+    && chmod +x /usr/local/bin/vroom
+
+# 5. Configuración
 RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
-RUN sed -i "s/host: 'localhost'/host: 'map-production-c2c6.up.railway.app'/g" config.yml
+RUN sed -i "s/host: 'localhost'/host: 'router.project-osrm.org'/g" config.yml
 RUN sed -i "s/port: 5000/port: 80/g" config.yml
 
+ENV VROOM_PATH=/usr/local/bin/vroom
 ENV PORT=3000
 EXPOSE 3000
 
-# Añade esto en el Dockerfile para que VROOM sea muy hablador
-ENV VROOM_LOG_LEVEL=info
-# Y este otro para que Express nos diga qué está pasando
-ENV DEBUG=express:*
-# ... (todo tu Dockerfile igual)
-# Añade esto antes del CMD
-ENV VROOM_PATH=/usr/local/bin/vroom
-
-# CMD ["sh", "-c", "node src/index.js & tail -f /dev/null"]
+# CMD ["node", "src/index.js"]
 # CMD temporal para diagnosticar el binario
 CMD ["sh", "-c", "/usr/local/bin/vroom --version && echo 'Binario OK' || echo 'Binario FALLA' && sleep 3600"]
