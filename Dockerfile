@@ -1,33 +1,40 @@
-# 1. Usar Ubuntu 22.04 (más compatible con binarios de VROOM)
+# Usa una imagen base compatible
 FROM ubuntu:22.04
 
-# 2. Instalar dependencias esenciales
-RUN apt-get update && apt-get install -y \
-    curl \
+# Instalar dependencias necesarias para compilar y ejecutar
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
     git \
-    nodejs \
-    npm \
+    libasio-dev \
     libboost-all-dev \
     libglpk-dev \
+    nodejs \
+    npm \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Descargar y asegurar permisos
-RUN curl -L https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 -o /usr/local/bin/vroom \
-    && chmod +x /usr/local/bin/vroom
+# Clonar y compilar VROOM desde el código fuente oficial
+RUN git clone https://github.com/VROOM-Project/vroom.git /vroom-source \
+    && cd /vroom-source \
+    && mkdir build && cd build \
+    && cmake .. \
+    && make \
+    && cp bin/vroom /usr/local/bin/vroom \
+    && chmod +x /usr/local/bin/vroom \
+    && rm -rf /vroom-source
 
-# 4. App
+# Instalar vroom-express
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 WORKDIR /app
 RUN npm install --omit=dev --ignore-scripts
 
-# 5. Parches (usar OSRM público)
-RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
-RUN sed -i "s/host: 'localhost'/host: 'router.project-osrm.org'/g" config.yml
-RUN sed -i "s/port: 5000/port: 80/g" config.yml
-
-# 6. MANTENER VIVO: Si node muere, el contenedor no se detiene, permitiendo ver logs
+# Variables de entorno y configuración
+ENV VROOM_PATH=/usr/local/bin/vroom
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["sh", "-c", "node src/index.js || (echo 'Node murió, manteniendo contenedor...' && sleep 3600)"]
-# CMD ["sh", "-c", "/usr/local/bin/vroom --version && echo 'Binario OK' || echo 'Binario FALLA' && sleep 3600"]
+# Parchear configuración de host para Railway
+RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
+
+CMD ["node", "src/index.js"]
