@@ -1,17 +1,18 @@
-# 1. Usamos la imagen oficial de VROOM Express como base limpia de Node
+# 1. Usamos una imagen ligera de Node de nivel de producción
 FROM node:18-alpine
 
-# 2. Instalar dependencias del sistema necesarias para compilar VROOM (C++)
-RUN apk add --no-cache git make g++ bsdtf-dev libosrm-dev geojson-glib-dev boost-dev
+# 2. Instalar únicamente las herramientas básicas de descarga del sistema
+RUN apk add --no-cache git
 
-# 3. Clonar el repositorio oficial de la API Express de VROOM
+# 3. Clonar el repositorio oficial de la interfaz de VROOM Express
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 
 WORKDIR /app
 
-# 4. Instalar las dependencias de Node.js e inyectar el puerto dinámico de Railway
+# 4. Instalar las dependencias de JavaScript
 RUN npm install
 
+# Exponer el puerto dinámico asignado por Railway
 EXPOSE 3000
 
 CMD ["npm", "start"]
