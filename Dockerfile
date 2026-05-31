@@ -39,4 +39,8 @@ RUN sed -i "s/port: 5000/port: 80/g" config.yml
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+# ... (todo tu Dockerfile igual)
+# Añade esto antes del CMD
+ENV VROOM_PATH=/usr/local/bin/vroom
+
+CMD ["sh", "-c", "node src/index.js & tail -f /dev/null"]
