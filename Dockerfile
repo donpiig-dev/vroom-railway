@@ -8,19 +8,22 @@ RUN apk add --no-cache git sed
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 WORKDIR /app
 
-# 4. 🔥 PARCHES DE SEGURIDAD Y CONEXIÓN
+# 4. 🔥 PARCHES CRUCIALES DE SEGURIDAD, RUTAS Y CONEXIÓN
 # Parche 1: Desbloqueo total de CORS para tu PWA
 RUN sed -i "s/app.use(express.json({/app.use((req, res, next) => { res.header('Access-Control-Allow-Origin', '*'); res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method'); res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE'); res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE'); if (req.method === 'OPTIONS') { return res.sendStatus(200); } next(); }); app.use(express.json({/g" src/index.js
 
-# Parche 2: Escuchar en la interfaz pública 0.0.0.0 en lugar de localhost
+# Parche 2: Forzar a escuchar en la interfaz pública 0.0.0.0
 RUN sed -i "s/const host = '127.0.0.1';/const host = '0.0.0.0';/g" src/index.js
 
-# 5. 🔥 INSTALACIÓN SEGURA: Ignoramos scripts de desarrollo y omitimos devDependencies
+# Parche 3: Asegurar que la ruta base del servidor Express sea la raíz exacta sin prefijos ocultos
+RUN sed -i "s/baseurl: .*/baseurl: '\/'/g" config.yml
+
+# 5. Instalación limpia omitiendo herramientas de desarrollo
 RUN npm install --omit=dev --ignore-scripts
 
-# 6. Forzar a Express a leer la variable PORT dinámica de Railway
+# 6. Variables de entorno para Railway
 ENV PORT=3000
 EXPOSE 3000
 
-# Ejecutamos el archivo directamente con Node, saltándonos NPM para ahorrar RAM
+# Ejecutamos de forma nativa para ahorrar el máximo de memoria RAM
 CMD ["node", "src/index.js"]
