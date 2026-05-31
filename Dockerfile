@@ -14,16 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Compilación de VROOM
+# 3. Compilación de VROOM (Ruta corregida)
 RUN curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.14.0.tar.gz -o vroom.tar.gz \
     && tar -xzf vroom.tar.gz \
-    && cd vroom-1.14.0 \
+    && cd vroom-1.14.0* \
     && mkdir build && cd build \
     && cmake .. \
     && make \
     && cp bin/vroom /usr/local/bin/vroom \
     && chmod +x /usr/local/bin/vroom \
-    && cd / && rm -rf vroom-1.14.0 vroom.tar.gz
+    && cd / && rm -rf vroom-1.14.0* vroom.tar.gz
 
 # 4. Clonar y configurar vroom-express
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
