@@ -17,16 +17,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Descargamos el código fuente comprimido (más estable que un binario directo)
 # y lo compilamos internamente
-# 3. Compilación de VROOM (Ruta absoluta forzada)
 RUN curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.14.0.tar.gz -o vroom.tar.gz \
     && tar -xzf vroom.tar.gz \
-    && cd $(find . -maxdepth 1 -type d -name "vroom-*") \
-    && mkdir build && cd build \
-    && cmake .. \
-    && make \
-    && cp bin/vroom /usr/local/bin/vroom \
-    && chmod +x /usr/local/bin/vroom \
-    && cd / && rm -rf vroom-* vroom.tar.gz
+    && echo "Contenido de la carpeta:" && ls -F \
+    && cd vroom-1.14.0* \
+    && echo "Contenido de vroom-1.14.0:" && ls -F \
+    && exit 1
+    
 # Clonar app y configurar
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
 WORKDIR /app
