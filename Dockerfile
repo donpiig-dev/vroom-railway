@@ -14,10 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Compilación de VROOM (Ruta corregida)
+# 3. Compilación de VROOM (Ruta explícita y descarga robusta)
 RUN curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.14.0.tar.gz -o vroom.tar.gz \
     && tar -xzf vroom.tar.gz \
-    && cd vroom-1.14.0* \
+    && ls -R /vroom-1.14.0* # Debug: esto nos dirá en el log dónde está el CMakeLists.txt \
+    && cd $(ls -d /vroom-1.14.0*) \
     && mkdir build && cd build \
     && cmake .. \
     && make \
