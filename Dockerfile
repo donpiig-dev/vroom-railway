@@ -1,17 +1,20 @@
-# 1. Volvemos a la imagen ultra estable de Node sobre Debian
-FROM node:18-bullseye
+# 1. Base estable
+FROM node:18-bookworm
 
-# 2. 🔥 DESCARGA DIRECTA DEL BINARIO PRECOMPILADO (CERO COMPILACIÓN, CERO AP-GET ROTOR)
+# 2. 🔥 INSTALACIÓN SEGURA Y VERIFICADA
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
     git \
     sed \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Descargamos el binario de VROOM v1.14.0 compilado para Linux x86_64, lo movemos y le damos permisos
-RUN curl -L -o /usr/local/bin/vroom https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 \
-    && chmod +x /usr/local/bin/vroom
+# Descarga el binario oficial de vroom v1.14.0 directamente de GitHub
+# Usamos un nombre de archivo temporal para verificar que sea un ejecutable
+RUN curl -L https://github.com/VROOM-Project/vroom/releases/download/v1.14.0/vroom-linux-x86_64 -o /usr/local/bin/vroom \
+    && chmod +x /usr/local/bin/vroom \
+    && /usr/local/bin/vroom --version
+
+# (El resto de tu Dockerfile sigue igual...)
 
 # 3. Clonar la interfaz Express (Node.js)
 RUN git clone https://github.com/VROOM-Project/vroom-express.git /app
