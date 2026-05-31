@@ -11,6 +11,9 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copiar el script de inicio y darle permisos de ejecución
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
+RUN dos2unix /start.sh && \
+    chmod +x /start.sh && \
+    chmod +x /docker-entrypoint.sh
 
 # 2. Corregimos IP, puerto y el nombre del perfil (OSRM público usa 'driving', no 'car')
 RUN sed -i "s/0.0.0.0/router.project-osrm.org/g" /vroom-express/config.yml || true && \
